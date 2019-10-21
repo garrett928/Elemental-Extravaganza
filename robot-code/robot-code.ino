@@ -1,10 +1,4 @@
 #include <PS2X_lib.h>
-<<<<<<< HEAD
-=======
-#include <Psx.h>
-#include <Servo.h>
-
->>>>>>> 8f07eb9630e738e27eb8d92d770bb7979b64ac3f
 
 //playstation controller pinout
 #define PS_DATA_PIN 2
@@ -29,20 +23,9 @@ float joyLeftY;
 //var raw controller data
 unsigned int controller_data;
 
-// servos
-Servo right_wheel;
-Servo left_wheel;
-
 void setup() {
 //init controller pins
-<<<<<<< HEAD
 controller.config_gamepad(PS_CLOCK_PIN, PS_CMND_PIN, PS_ATT_PIN, PS_DATA_PIN, pressures, rumble);
-=======
-controller.setupPins(PS_DATA_PIN, PS_CMND_PIN, PS_ATT_PIN,PS_CLOCK_PIN,PS_DELAY);
-//attach servos to pins
-right_wheel.attach(12);
-left_wheel.attach(13);
->>>>>>> 8f07eb9630e738e27eb8d92d770bb7979b64ac3f
 
 //give controller time for wireless setup
 delay(300);
@@ -84,21 +67,4 @@ void readController(){
   Serial.println(joyLeftX);
 
   delay(30);
-}
-
-void drive(float left, float right){
-  if(left == -1){
-    left_wheel.writeMicroseconds(150);
-  }
-  if(left == 1){
-    left_wheel.writeMicroseconds(90);
-    
-  }
-  if(right == -1){
-    right_wheel.writeMicroseconds(150);
-  }
-  if(right == 1){
-    right_wheel.writeMicroseconds(90);
-  }
-  
 }
