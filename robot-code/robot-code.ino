@@ -1,9 +1,4 @@
 #include <PS2X_lib.h>
-<<<<<<< HEAD
-=======
-#include <Psx.h>
-
->>>>>>> c359e9edbd70313fae943af349153b31f2443c8e
 
 //playstation controller pinout
 #define PS_DATA_PIN 2
@@ -29,14 +24,10 @@ unsigned int controller_data;
 
 void setup() {
 //init controller pins
-<<<<<<< HEAD
 controller.config_gamepad(PS_CLOCK_PIN, PS_CMND_PIN, PS_ATT_PIN, PS_DATA_PIN, pressures, rumble);
 
 //give controller time for wireless setup
 delay(300);
-=======
-controller.setupPins(PS_DATA_PIN, PS_CMND_PIN, PS_ATT_PIN,PS_CLOCK_PIN,PS_DELAY);
->>>>>>> c359e9edbd70313fae943af349153b31f2443c8e
 
 //init serial
 Serial.begin(9600);
@@ -69,15 +60,8 @@ void readController(){
 
   // controllerRightX >> 8;
 
-<<<<<<< HEAD
   Serial.print("left x");
   Serial.println(joyLeftX);
 
   delay(30);
-=======
-  // Serial.print("data3: ");
-  // Serial.println(controllerLeftX, DEC);
-
-  delay(15);
->>>>>>> c359e9edbd70313fae943af349153b31f2443c8e
 }
