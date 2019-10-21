@@ -1,0 +1,15 @@
+	• Wire
+		○ Controller
+		○ Ir Led
+		○ Ir receiver 
+        ir test circuit 
+	• Code
+		○ Read remote
+		○ Drive robot
+		○ Shoot ir
+		○ Detect ir
+	• Repeat code for 2 wireless
+	• Wire
+		○ Wifi
+		○ Tether computer 
+
