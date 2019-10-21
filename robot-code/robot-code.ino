@@ -1,5 +1,6 @@
 #include <PS2X_lib.h>
 #include <Psx.h>
+#include <Servo.h>
 
 
 //playstation controller pinout
@@ -31,6 +32,9 @@ Servo left_wheel;
 void setup() {
 //init controller pins
 controller.setupPins(PS_DATA_PIN, PS_CMND_PIN, PS_ATT_PIN,PS_CLOCK_PIN,PS_DELAY);
+//attach servos to pins
+right_wheel.attach(12);
+left_wheel.attach(13);
 
 //init serial
 Serial.begin(9600);
