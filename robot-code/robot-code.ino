@@ -31,11 +31,15 @@ Servo right_wheel;
 Servo left_wheel;
 
 void setup() {
-//init controller pins
-controller.setupPins(PS_DATA_PIN, PS_CMND_PIN, PS_ATT_PIN,PS_CLOCK_PIN,PS_DELAY);
+
 //attach servos to pins
 right_wheel.attach(12);
 left_wheel.attach(13);
+
+controller.config_gamepad(PS_CLOCK_PIN, PS_CMND_PIN, PS_ATT_PIN, PS_DATA_PIN, pressures, rumble);
+
+//give controller time for wireless setup
+delay(300);
 
 //init serial
 Serial.begin(9600);
@@ -68,10 +72,10 @@ void readController(){
 
   // controllerRightX >> 8;
 
-  // Serial.print("data3: ");
-  // Serial.println(controllerLeftX, DEC);
+  Serial.print("left x");
+  Serial.println(joyLeftX);
 
-  delay(15);
+  delay(30);
 }
 
 void drive(float left, float right){
