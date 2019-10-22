@@ -7,13 +7,14 @@
 //test for git
 
 //playstation controller pinout
-#define PS_DATA_PIN 2
-#define PS_CMND_PIN 3
-#define PS_ATT_PIN 4 //sel pin for ps2 library
-#define PS_CLOCK_PIN 5
+#define PS_DATA_PIN 4
+#define PS_CMND_PIN 5
+#define PS_ATT_PIN 6 //sel pin for ps2 library
+#define PS_CLOCK_PIN 7
 
-//ir out pin
-#define IR_OUT_PIN 6
+#define IR_IN_PIN 10
+
+#define HIT_LED_PIN 9
 
 #define JOY_MID 133
 //#define pressures   true
@@ -27,6 +28,8 @@
 //ir reciver pin
 #define receiver_pin 8
 
+#define sending_pin 3
+
 //var to store button hex val,
 //results.value is  an unsigned long
 unsigned long irValue;
@@ -34,6 +37,9 @@ unsigned long irValue;
 //create IR object and var to store results
 IRrecv irrecv(receiver_pin);
 decode_results results;
+
+
+IRsend irsend;
 
 //ps controller object
 PS2X controller;
@@ -62,7 +68,7 @@ controller.config_gamepad(PS_CLOCK_PIN, PS_CMND_PIN, PS_ATT_PIN, PS_DATA_PIN, pr
 //give controller time for wireless setup
 delay(300);
 
-pinMode(IR_OUT_PIN, OUTPUT);
+pinMode(HIT_LED_PIN, OUTPUT);
 
 //init serial
 Serial.begin(57600);
@@ -74,11 +80,13 @@ Serial.begin(57600);
 
 void loop() {
   // put your main code here, to run repeatedly:
-  readJoyController();
+  // readJoyController();
 
 readControllerButtons();
 
-  // readIRController();
+//checkForHits();
+
+  readIRController();
 
   drive(joyLeftY, joyRightY);
 
@@ -144,13 +152,36 @@ void readControllerButtons(){
 
     if(controller.Button(PSB_CROSS)){              //will be TRUE if button was JUST pressed OR released
       Serial.println("X just changed");
-      digitalWrite(IR_OUT_PIN, HIGH);
+      // Send the code 3 times. First one is often received as garbage
+for (int i = 0; i < 3; i++) {
+ irsend.sendSony(0x5A5, 12); //Transmit the code 0x5A5 signal from IR LED
+ delay(100);
+ }
     }
-    else
-    {
-      digitalWrite(IR_OUT_PIN, LOW);
-    }
-    
+ 
+      irrecv.enableIRIn();
+
+}
+
+void checkForHits(){
+
+ if (irrecv.decode(&results)) {
+    //if button is not a repeat
+    if(results.value != 0xFFFFFFFF)
+      //update the button code
+      irValue = results.value;
+
+      Serial.println(irValue, HEX);
+  if(irValue == 0xFFA857){
+    digitalWrite(HIT_LED_PIN, HIGH);
+    delay(100);
+  }
+  else{
+    digitalWrite(HIT_LED_PIN, LOW);
+  }
+ }
+
+
 }
 
 /*
