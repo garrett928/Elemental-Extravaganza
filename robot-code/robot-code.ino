@@ -54,13 +54,13 @@ float joyLeftY;
 unsigned int controller_data;
 
 // servos
-Servo right_wheel;
+Servo rightWheel;
 Servo left_wheel;
 
 void setup() {
 
 //attach servos to pins
-right_wheel.attach(12);
+rightWheel.attach(12);
 left_wheel.attach(13);
 
 controller.config_gamepad(PS_CLOCK_PIN, PS_CMND_PIN, PS_ATT_PIN, PS_DATA_PIN, pressures, rumble);
@@ -239,14 +239,15 @@ void drive(float left, float right){
   }
 
   if(right == -1){
-    right_wheel.writeMicroseconds(1000);
+    rightWheel.writeMicroseconds(1000);
   }
   else if(right == 1){
-    right_wheel.writeMicroseconds(2000);
+    rightWheel.writeMicroseconds(2000);
   }
   else{
-    right_wheel.writeMicroseconds(1500);
-    // right_wheel.write(90);
+    rightWheel.writeMicroseconds(1500);
+    // rightWh
+eel.write(90);
   }
   
 
