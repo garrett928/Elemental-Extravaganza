@@ -15,3 +15,19 @@ Weekend of 10/20/19 (week 1)
 		○ Wifi
 		○ Tether computer 
 
+weekend of 10/24/19
+• parts
+		○IR lights/reciever 
+		sonar sensor 
+	• test board
+		○map knob values to elements
+		fire ir code when button presed 
+		detect hits
+
+	• mount senors 
+
+	• Wire
+		○senors 
+
+	detect distance and position
+	dectect elements
