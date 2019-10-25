@@ -29,17 +29,34 @@
 
 #define sending_pin 3
 
+
+
+class EasyPS2X : public PS2X
+{
+  public:
+    float rightX;
+    float rightY;
+    float leftX;
+    float leftY;
+
+    //refresh the gamepad and update joystick and button vals
+    //hide extra work from rest of code
+    void refresh(){
+      controller.read_gamepad();
+
+    }
+  
+};
+
+
 //robot state, robot will not be in auto right now
 bool isAuto = false;
 
 //ps controller object
-PS2X controller;
+EasyPS2X controller;
 
 //vars for seperated controller data
-float joyRightX;
-float joyRightY;
-float joyLeftX;
-float joyLeftY;
+
 
 //servo objects
 Servo rightWheel;
@@ -87,18 +104,17 @@ if(isAuto){
 }
 //normal driving and comp code
 else{
+  controller.refresh();
 
-  // readJoyController();
+  readJoyController();
 
 readControllerButtons();
 
 //checkForHits();
 
-  readIRController();
+  // readIRController();
 
-  drive(joyLeftY, joyRightY);
-
-  // delay(500);
+  drive(controller.leftY, controller.rightY);
 
 }
 }
@@ -245,7 +261,6 @@ void drive(float left, float right){
   }
   else{
     leftWheel.writeMicroseconds(1500);
-    // left_wheel.write(90);
   }
 
   if(right == -1){
@@ -256,8 +271,6 @@ void drive(float left, float right){
   }
   else{
     rightWheel.writeMicroseconds(1500);
-    // rightWh
-eel.write(90);
   }
   
 
