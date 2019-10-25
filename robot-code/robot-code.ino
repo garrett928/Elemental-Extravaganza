@@ -4,42 +4,33 @@
 #include <EIRremote.h>
 #include <EIRremoteInt.h>
 
-//test for git
-
 //playstation controller pinout
 #define PS_DATA_PIN 4
 #define PS_CMND_PIN 5
 #define PS_ATT_PIN 6 //sel pin for ps2 library
 #define PS_CLOCK_PIN 7
 
+//used to init ps controller
+#define pressures   false
+#define rumble      false
+
+//offset for servo power
+#define SERVOR_OFFSET 0
+
+//middle position of joystick
+#define JOY_MID 133
+
 #define IR_IN_PIN 10
 
 #define HIT_LED_PIN 9
-
-#define JOY_MID 133
-//#define pressures   true
-#define pressures   false
-//#define rumble      true
-#define rumble      false
-
-#define RIGHT_JOY_X 40 
-#define RIGHT_JOY_Y 48
 
 //ir reciver pin
 #define receiver_pin 8
 
 #define sending_pin 3
 
-//var to store button hex val,
-//results.value is  an unsigned long
-unsigned long irValue;
-
-//create IR object and var to store results
-IRrecv irrecv(receiver_pin);
-decode_results results;
-
-
-IRsend irsend;
+//robot state, robot will not be in auto right now
+bool isAuto = false;
 
 //ps controller object
 PS2X controller;
@@ -50,18 +41,29 @@ float joyRightY;
 float joyLeftX;
 float joyLeftY;
 
-//var raw controller data
+//servo objects
+Servo rightWheel;
+Servo leftWheel;
+
+//IRsednding object
+IRsend irsend;
+
+//create IR object and var to store results
+IRrecv irrecv(receiver_pin);
+decode_results results;
+
+//var for raw controller data
 unsigned int controller_data;
 
-// servos
-Servo rightWheel;
-Servo left_wheel;
+//var to store button hex val,
+//results.value is  an unsigned long
+unsigned long irValue;
 
 void setup() {
 
 //attach servos to pins
 rightWheel.attach(12);
-left_wheel.attach(13);
+leftWheel.attach(13);
 
 controller.config_gamepad(PS_CLOCK_PIN, PS_CMND_PIN, PS_ATT_PIN, PS_DATA_PIN, pressures, rumble);
 
@@ -73,13 +75,19 @@ pinMode(HIT_LED_PIN, OUTPUT);
 //init serial
 Serial.begin(57600);
 
-  //enable ir receiving 
-  irrecv.enableIRIn();
-
+//enable ir receiving 
+irrecv.enableIRIn();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+//what to do when in auto mode
+if(isAuto){
+
+}
+//normal driving and comp code
+else{
+
   // readJoyController();
 
 readControllerButtons();
@@ -91,6 +99,8 @@ readControllerButtons();
   drive(joyLeftY, joyRightY);
 
   // delay(500);
+
+}
 }
 
 
@@ -228,13 +238,13 @@ if(abs(joyRightX - JOY_MID) < 25)
 
 void drive(float left, float right){
   if(left == -1){
-    left_wheel.writeMicroseconds(2000);
+    leftWheel.writeMicroseconds(2000);
   }
   else if(left == 1){
-    left_wheel.writeMicroseconds(1000);
+    leftWheel.writeMicroseconds(1000);
   }
   else{
-    left_wheel.writeMicroseconds(1500);
+    leftWheel.writeMicroseconds(1500);
     // left_wheel.write(90);
   }
 
