@@ -3,6 +3,7 @@
 #include <Servo.h>
 #include <EIRremote.h>
 #include <EIRremoteInt.h>
+#include "EasyPS2X.h"
 
 //playstation controller pinout
 #define PS_DATA_PIN 4
@@ -31,22 +32,52 @@
 
 
 
-class EasyPS2X : public PS2X
-{
-  public:
-    float rightX;
-    float rightY;
-    float leftX;
-    float leftY;
+// class EasyPS2X : public PS2X
+// {
+//   public:
+//     float rightX;
+//     float rightY;
+//     float leftX;
+//     float leftY;
 
-    //refresh the gamepad and update joystick and button vals
-    //hide extra work from rest of code
-    void refresh(){
-      controller.read_gamepad();
+//   // private:
+//     void upateJoySticks(){
+//         //update joystick's states
+//         leftX = Analog(PSS_LX);
+//         leftY = Analog(PSS_LY);
+//         rightX = Analog(PSS_RX);
+//         rightY = Analog(PSS_RY);
 
-    }
-  
-};
+//       //apply deadband to positions
+//       if(abs(leftX - JOY_MID) < 25)
+//         leftX = JOY_MID;
+//       if(abs(leftY - JOY_MID) < 25)
+//   leftY = JOY_MID;
+//       if(abs(rightX - JOY_MID) < 25)
+//         rightX = JOY_MID;
+//       if(abs(rightY - JOY_MID) < 25)
+//         rightY = JOY_MID;
+
+//   //NEEDS TO NOT FLOOR VALUES
+
+//   //map joy vals to -1 to 1
+//   leftX = map(leftX, 0, 255, -1, 1);
+//   leftY =  map(leftY, 0, 255, -1, 1);
+//   rightX =  map(rightX, 0, 255, -1, 1);
+//   rightY =  map(rightY, 0, 255, -1, 1);
+
+//   } 
+
+//       //refresh the gamepad and update joystick and button vals
+//     //hide extra work from rest of code
+//     void refresh(){
+//       //update gamepad values from PS2X
+//       read_gamepad();
+
+//       updateJoySticks();
+      
+//     }
+// };
 
 
 //robot state, robot will not be in auto right now
@@ -54,9 +85,6 @@ bool isAuto = false;
 
 //ps controller object
 EasyPS2X controller;
-
-//vars for seperated controller data
-
 
 //servo objects
 Servo rightWheel;
@@ -106,9 +134,9 @@ if(isAuto){
 else{
   controller.refresh();
 
-  readJoyController();
+  // readJoyController();
 
-readControllerButtons();
+// readControllerButtons();
 
 //checkForHits();
 
@@ -123,9 +151,6 @@ readControllerButtons();
 
 void readIRController(){
 
-// joyLeftY = 0;
-// joyRightY = 0;
-
 // have we received an IR signal and no object
   if (irrecv.decode(&results)) {
     //if button is not a repeat
@@ -139,25 +164,24 @@ void readIRController(){
   //act based on rwhat remote button was pressed
   switch(irValue){
   case 0xFFA857: 
-  joyLeftY = 1;
+  controller.leftY = 1;
   Serial.println("VOL-");
   break;
-  case 0xFF22DD: 
-    joyLeftY = -1;
+  case 0xFF22DD: controller.leftY = -1;
     
 Serial.println("FAST BACK");    
 break;
 
 case 0xFF02FD:
-    joyLeftY = 0;
-joyRightY = 0;
+controller.leftY = 0;
+controller.rightY = 0;
   break;
   case 0xFFC23D: 
-     joyRightY = -1;
+     controller.rightY = -1;
   Serial.println("FAST FORWARD");   
   break;
   case 0xFF629D: 
-  joyRightY = 1;  
+  controller.rightY = 1;  
   break;
   }
     //give remote a small delay
@@ -166,28 +190,28 @@ joyRightY = 0;
   }
 
     // Serial.print("left y");
-  Serial.println(joyLeftY);
+  // Serial.print(controller.leftY);
 
   // Serial.print("right x");
-  Serial.println(joyRightY);
+  // Serial.println(controller.rightY);
 }
 
-void readControllerButtons(){
+// void readControllerButtons(){
 
-  controller.read_gamepad();
+//   controller.read_gamepad();
 
-    if(controller.Button(PSB_CROSS)){              //will be TRUE if button was JUST pressed OR released
-      Serial.println("X just changed");
-      // Send the code 3 times. First one is often received as garbage
-for (int i = 0; i < 3; i++) {
- irsend.sendSony(0x5A5, 12); //Transmit the code 0x5A5 signal from IR LED
- delay(100);
- }
-    }
+//     if(controller.Button(PSB_CROSS)){              //will be TRUE if button was JUST pressed OR released
+//       Serial.println("X just changed");
+//       // Send the code 3 times. First one is often received as garbage
+// for (int i = 0; i < 3; i++) {
+//  irsend.sendSony(0x5A5, 12); //Transmit the code 0x5A5 signal from IR LED
+//  delay(100);
+//  }
+//     }
  
-      irrecv.enableIRIn();
+//       irrecv.enableIRIn();
 
-}
+// }
 
 void checkForHits(){
 
@@ -208,46 +232,6 @@ void checkForHits(){
  }
 
 
-}
-
-/*
-
-*/
-void readJoyController(){
-   //read gamepad to refresh library vals
-  controller.read_gamepad();
-
-
-  //update joystick's states
-  joyLeftX = controller.Analog(PSS_LX);
-  joyLeftY = controller.Analog(PSS_LY);
-  joyRightX = controller.Analog(PSS_RX);
-  joyRightY = controller.Analog(PSS_RY);
-
-  Serial.println(joyLeftY);
- //needs to not floor vals
- if(abs(joyLeftX - JOY_MID) < 25)
-    joyLeftX = JOY_MID;
-if(abs(joyLeftY - JOY_MID) < 25)
-    joyLeftY = JOY_MID;
-if(abs(joyRightX - JOY_MID) < 25)
-    joyRightX = JOY_MID;
-    if(abs(joyRightY - JOY_MID) < 25)
-    joyRightY = JOY_MID;
-
-  //map joy vals to -1 to 1
-  joyLeftX = map(joyLeftX, 0, 255, -1, 1);
-  joyLeftY =  map(joyLeftY, 0, 255, -1, 1);
-  joyRightX =  map(joyRightX, 0, 255, -1, 1);
-  joyRightY =  map(joyRightY, 0, 255, -1, 1);
-
-  // Serial.print("left y");
-  Serial.println(joyLeftY);
-
-  // Serial.print("right x");
-  Serial.println(joyRightY);
-
-  delay(30);
 }
 
 
