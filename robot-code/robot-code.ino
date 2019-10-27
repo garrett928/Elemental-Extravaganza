@@ -1,9 +1,7 @@
 #include <PS2X_lib.h>
-#include <Psx.h>
 #include <Servo.h>
 #include <EIRremote.h>
 #include <EIRremoteInt.h>
-#include "EasyPS2X.h"
 
 //playstation controller pinout
 #define PS_DATA_PIN 4
@@ -30,61 +28,20 @@
 
 #define sending_pin 3
 
+//Stucture for joystick data
+struct joystick{
+  double LX;
+  double LY;
+  double RX;
+  double RY;
 
-
-// class EasyPS2X : public PS2X
-// {
-//   public:
-//     float rightX;
-//     float rightY;
-//     float leftX;
-//     float leftY;
-
-//   // private:
-//     void upateJoySticks(){
-//         //update joystick's states
-//         leftX = Analog(PSS_LX);
-//         leftY = Analog(PSS_LY);
-//         rightX = Analog(PSS_RX);
-//         rightY = Analog(PSS_RY);
-
-//       //apply deadband to positions
-//       if(abs(leftX - JOY_MID) < 25)
-//         leftX = JOY_MID;
-//       if(abs(leftY - JOY_MID) < 25)
-//   leftY = JOY_MID;
-//       if(abs(rightX - JOY_MID) < 25)
-//         rightX = JOY_MID;
-//       if(abs(rightY - JOY_MID) < 25)
-//         rightY = JOY_MID;
-
-//   //NEEDS TO NOT FLOOR VALUES
-
-//   //map joy vals to -1 to 1
-//   leftX = map(leftX, 0, 255, -1, 1);
-//   leftY =  map(leftY, 0, 255, -1, 1);
-//   rightX =  map(rightX, 0, 255, -1, 1);
-//   rightY =  map(rightY, 0, 255, -1, 1);
-
-//   } 
-
-//       //refresh the gamepad and update joystick and button vals
-//     //hide extra work from rest of code
-//     void refresh(){
-//       //update gamepad values from PS2X
-//       read_gamepad();
-
-//       updateJoySticks();
-      
-//     }
-// };
-
+} joystick;
 
 //robot state, robot will not be in auto right now
 bool isAuto = false;
 
 //ps controller object
-EasyPS2X controller;
+PS2X controller;
 
 //servo objects
 Servo rightWheel;
@@ -103,6 +60,71 @@ unsigned int controller_data;
 //var to store button hex val,
 //results.value is  an unsigned long
 unsigned long irValue;
+
+
+/*
+* Drive Function
+*/
+void drive(float left, float right){
+  if(left == -1){
+    leftWheel.writeMicroseconds(2000);
+  }
+  else if(left == 1){
+    leftWheel.writeMicroseconds(1000);
+  }
+  else{
+    leftWheel.writeMicroseconds(1500);
+  }
+
+  if(right == -1){
+    rightWheel.writeMicroseconds(1000);
+  }
+  else if(right == 1){
+    rightWheel.writeMicroseconds(2000);
+  }
+  else{
+    rightWheel.writeMicroseconds(1500);
+  }
+}
+
+
+/*
+* updates joystick values and maps them
+*/ void updateJoySticks(){
+        //update joystick's states
+        joystick.LX = Analog(PSS_LX);
+        joystick.LY = Analog(PSS_LY);
+        joystick.RX= Analog(PSS_RX);
+        joystick.RY= Analog(PSS_RY);
+
+      //apply deadband to positions
+      if(abs(joystick.LX - JOY_MID) < 25)
+        joystick.LX = JOY_MID;
+      if(abs(joystick.LY - JOY_MID) < 25)
+  joystick.LY= JOY_MID;
+      if(abs(joystick.RX - JOY_MID) < 25)
+        joystick.RX= JOY_MID;
+      if(abs(joystick.RY - JOY_MID) < 25)
+        joystick.RY= JOY_MID;
+
+  //NEEDS TO NOT FLOOR VALUES
+
+  //map joy vals to -1 to 1
+  joystick.LX= map(joystick.LX, 0, 255, -1, 1);
+  joystick.LY =  map(joystick.LY, 0, 255, -1, 1);
+  joystick.RX=  map(joystick.RX, 0, 255, -1, 1);
+  joystick.RY=  map(joystick.RY, 0, 255, -1, 1);
+  } 
+
+
+/*
+* Refreshes all values and senors. Is to be called at once at the top of 
+* the main loop. Only updates variables and states.
+*/
+void refresh(){
+  controller.read_gamepad();
+  updateJoySticks();
+}
 
 void setup() {
 
@@ -132,9 +154,7 @@ if(isAuto){
 }
 //normal driving and comp code
 else{
-  controller.refresh();
-
-  // readJoyController();
+  refresh();
 
 // readControllerButtons();
 
@@ -142,7 +162,7 @@ else{
 
   // readIRController();
 
-  drive(controller.leftY, controller.rightY);
+  drive(joystick.LY, joystick.RY);
 
 }
 }
@@ -236,27 +256,3 @@ void checkForHits(){
 
 
 
-void drive(float left, float right){
-  if(left == -1){
-    leftWheel.writeMicroseconds(2000);
-  }
-  else if(left == 1){
-    leftWheel.writeMicroseconds(1000);
-  }
-  else{
-    leftWheel.writeMicroseconds(1500);
-  }
-
-  if(right == -1){
-    rightWheel.writeMicroseconds(1000);
-  }
-  else if(right == 1){
-    rightWheel.writeMicroseconds(2000);
-  }
-  else{
-    rightWheel.writeMicroseconds(1500);
-  }
-  
-
-  
-}
