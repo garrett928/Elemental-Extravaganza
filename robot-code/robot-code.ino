@@ -1,7 +1,13 @@
+#include <SharpIR.h>
+
 #include <PS2X_lib.h>
 #include <Servo.h>
 #include <EIRremote.h>
 #include <EIRremoteInt.h>
+#include <math.h>
+
+
+#include<Wire.h>  
 
 //playstation controller pinout
 #define PS_DATA_PIN 4
@@ -20,6 +26,7 @@
 #define JOY_MID 133
 
 #define IR_IN_PIN 10
+#define IR_PROX_PIN 0
 
 #define HIT_LED_PIN 9
 
@@ -27,6 +34,10 @@
 #define receiver_pin 8
 
 #define sending_pin 3
+
+#define RBG_R 9
+#define RBG_G 10
+#define RGb_B 11
 
 //Stucture for joystick data
 struct joystick{
@@ -37,8 +48,13 @@ struct joystick{
 
 } joystick;
 
+int redVal = 0;
+int blueVal = 0;
+int greenVal = 0;
+
+
 //robot state, robot will not be in auto right now
-bool isAuto = false;
+bool isAuto = true;
 
 //ps controller object
 PS2X controller;
@@ -60,6 +76,8 @@ unsigned int controller_data;
 //var to store button hex val,
 //results.value is  an unsigned long
 unsigned long irValue;
+
+SharpIR irProx (SharpIR::GP2Y0A21YK0F, IR_PROX_PIN);
 
 
 /*
@@ -92,10 +110,10 @@ void drive(float left, float right){
 * updates joystick values and maps them
 */ void updateJoySticks(){
         //update joystick's states
-        joystick.LX = Analog(PSS_LX);
-        joystick.LY = Analog(PSS_LY);
-        joystick.RX= Analog(PSS_RX);
-        joystick.RY= Analog(PSS_RY);
+        joystick.LX = controller.Analog(PSS_LX);
+        joystick.LY = controller.Analog(PSS_LY);
+        joystick.RX= controller.Analog(PSS_RX);
+        joystick.RY= controller.Analog(PSS_RY);
 
       //apply deadband to positions
       if(abs(joystick.LX - JOY_MID) < 25)
@@ -144,6 +162,13 @@ Serial.begin(57600);
 
 //enable ir receiving 
 irrecv.enableIRIn();
+
+pinMode(RBG_G, OUTPUT);
+pinMode(RGb_B, OUTPUT);
+pinMode(RBG_R, OUTPUT);
+
+
+
 }
 
 void loop() {
@@ -151,7 +176,52 @@ void loop() {
 //what to do when in auto mode
 if(isAuto){
 
+
+while(irProx.getDistance() > 12){
+  drive(-1, -1);
+    Serial.print("IR Prox: ");
+  Serial.println(irProx.getDistance());
 }
+drive(0, 0);
+ // have we received an IR signal and no object
+  if (irrecv.decode(&results)) {
+    //if button is not a repeat
+    if(results.value != 0xFFFFFFFF)
+      //update the button code
+      irValue = results.value;
+
+    //print remote val
+    // Serial.println(irValue, HEX);
+
+  //act based on rwhat remote button was pressed
+  switch(irValue){
+  case 0xC9A: 
+  greenVal = 255;
+  Serial.println("Green");
+  break;
+  case 0xFF22DD: ;
+    
+Serial.println("FAST BACK");    
+break;
+  break;
+  case 0xFFC23D: 
+  Serial.println("FAST FORWARD");   
+  break;
+  case 0xFF629D: 
+  break;
+  }
+    //give remote a small delay
+    delay(250);
+    irrecv.resume();
+  }
+
+  digitalWrite(RGb_B, blueVal);
+  digitalWrite(RBG_G, greenVal);
+  digitalWrite(RBG_R, redVal);
+
+}
+
+
 //normal driving and comp code
 else{
   refresh();
@@ -169,52 +239,52 @@ else{
 
 
 
-void readIRController(){
+// void readIRController(){
 
-// have we received an IR signal and no object
-  if (irrecv.decode(&results)) {
-    //if button is not a repeat
-    if(results.value != 0xFFFFFFFF)
-      //update the button code
-      irValue = results.value;
+// // have we received an IR signal and no object
+//   if (irrecv.decode(&results)) {
+//     //if button is not a repeat
+//     if(results.value != 0xFFFFFFFF)
+//       //update the button code
+//       irValue = results.value;
 
-    //print remote val
-    // Serial.println(irValue, HEX);
+//     //print remote val
+//     // Serial.println(irValue, HEX);
 
-  //act based on rwhat remote button was pressed
-  switch(irValue){
-  case 0xFFA857: 
-  controller.leftY = 1;
-  Serial.println("VOL-");
-  break;
-  case 0xFF22DD: controller.leftY = -1;
+//   //act based on rwhat remote button was pressed
+//   switch(irValue){
+//   case 0xFFA857: 
+//   controller.leftY = 1;
+//   Serial.println("VOL-");
+//   break;
+//   case 0xFF22DD: controller.leftY = -1;
     
-Serial.println("FAST BACK");    
-break;
+// Serial.println("FAST BACK");    
+// break;
 
-case 0xFF02FD:
-controller.leftY = 0;
-controller.rightY = 0;
-  break;
-  case 0xFFC23D: 
-     controller.rightY = -1;
-  Serial.println("FAST FORWARD");   
-  break;
-  case 0xFF629D: 
-  controller.rightY = 1;  
-  break;
-  }
-    //give remote a small delay
-    delay(250);
-    irrecv.resume();
-  }
+// case 0xFF02FD:
+// controller.leftY = 0;
+// controller.rightY = 0;
+//   break;
+//   case 0xFFC23D: 
+//      controller.rightY = -1;
+//   Serial.println("FAST FORWARD");   
+//   break;
+//   case 0xFF629D: 
+//   controller.rightY = 1;  
+//   break;
+//   }
+//     //give remote a small delay
+//     delay(250);
+//     irrecv.resume();
+//   }
 
     // Serial.print("left y");
   // Serial.print(controller.leftY);
 
   // Serial.print("right x");
   // Serial.println(controller.rightY);
-}
+// }
 
 // void readControllerButtons(){
 
@@ -253,6 +323,3 @@ void checkForHits(){
 
 
 }
-
-
-
